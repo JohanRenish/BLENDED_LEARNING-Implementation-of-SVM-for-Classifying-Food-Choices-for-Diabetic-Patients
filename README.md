@@ -9,26 +9,16 @@ To implement a Support Vector Machine (SVM) model to classify food items and opt
 2. Anaconda – Python 3.7 Installation / Jupyter notebook
 
 ## Algorithm
-1.Import the required Python libraries such as pandas, sklearn, seaborn and matplotlib.
-
-2.Load the dataset using pandas read_csv() function.
-
-3.Separate the dataset into input features (X) and target variable (y).
-
-4.Apply data preprocessing such as scaling using MinMaxScaler and label encoding using LabelEncoder.
-
-5.Split the dataset into training and testing data using train_test_split().
-
-6.Create the classification model using LogisticRegression / SVM classifier.
-
-7.Train the model using the fit() function with training data.
-
-8.Predict the output for the testing dataset using predict().
-
-9.Evaluate the model using accuracy score, confusion matrix and classification report.
-
-10.Visualize the confusion matrix using seaborn heatmap.
-
+1.Load the dataset using pandas.
+2.Display dataset structure for understanding.
+3.Select relevant features and target variable.
+4.Split the dataset into training and testing sets.
+5.Apply feature scaling using StandardScaler.
+6.Initialize the Support Vector Machine (SVM) model.
+7.Define hyperparameters for tuning using GridSearchCV.
+8.Train the model with the training dataset.
+9.Predict results using the testing dataset.
+10.Evaluate model performance using accuracy and confusion matrix.
 ## Program:
 ```
 /*
@@ -36,55 +26,61 @@ Program to implement SVM for food classification for diabetic patients.
 Developed by: Johan Renish A
 RegisterNumber:212225040159
 */
-
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder,MinMaxScaler
-from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score,precision_score,recall_score,f1_score,confusion_matrix,classification_report
-import seaborn as sns
 import matplotlib.pyplot as plt
-df=pd.read_csv("food_items (1).csv")
-#inspect the dataset
-print("Dataset Overview")
-print(df.head())
-print("\ndatset Info")
-print(df.info())
-X_raw=df.iloc[:, :-1]
-y_raw=df.iloc[:, -1:]
-X_raw
-scaler=MinMaxScaler()
-X=scaler.fit_transform(X_raw)
-label_encoder=LabelEncoder()
-y=label_encoder.fit_transform(y_raw.values.ravel())
-X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,stratify=y,random_state=123)
-penalty='l2'
-multi_class='multnomial'
-solver='lbfgs'
-max_iter=1000
-model = LogisticRegression(max_iter=2000)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import seaborn as sns
+# Step 1: Load the dataset from the URL
+data = pd.read_csv('food_items_binary.csv')
+# Step 2: Data Exploration
+print(data.head())
+print(data.columns)
+# Step 3: Selecting Features and Target
+features = ['Calories', 'Total Fat', 'Saturated Fat', 'Sugars', 'Dietary Fiber', 'Protein']
+target = 'class'
+X = data[features]
+y = data[target]
+# Step 4: Splitting Data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Step 5:Feature Scaling
+scaler=StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+# Step 6: Model Training with Hyperparameter Tuning using GridSearchCV
+svm = SVC()
+param_grid = {
+    'C': [0.1, 1, 10, 100],              
+    'kernel': ['linear', 'rbf'],         
+    'gamma': ['scale', 'auto']           
+}
+
+grid_search = GridSearchCV(svm, param_grid, cv=5, scoring='accuracy')
+grid_search.fit(X_train, y_train)
+best_model = grid_search.best_estimator_
+print("="*50)
+print("Name:Johan Renish A")
+print("Reg No:212225040159")
+print("="*50)
+print("Best Parameters:", grid_search.best_params_)
+# Step 7: Model Evaluation
+y_pred = best_model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:\n", classification_report(y_test, y_pred))
 conf_matrix = confusion_matrix(y_test, y_pred)
-class_report = classification_report(y_test, y_pred)
-print("Model Accuracy:", accuracy)
-print("Confusion Matrix:\n", conf_matrix)
-print("Classification Report:\n", class_report)
-plt.figure(figsize=(5, 4))
-sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='coolwarm', cbar=False, 
-            xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
-plt.title("Confusion Matrix")
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues")
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
+plt.title("Confusion Matrix")
 plt.show()
 ```
 
 ## Output:
-![alt text](1.png)
-![alt text](2.png)
+![alt text](1.png) 
+![alt text](2.png) 
 ![alt text](3.png)
 ## Result:
 Thus, the SVM model was successfully implemented to classify food items for diabetic patients, with hyperparameter tuning optimizing the model's performance.
